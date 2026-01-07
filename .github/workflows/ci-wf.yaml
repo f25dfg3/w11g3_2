@@ -38,25 +38,22 @@ jobs:
     needs: build-job
     runs-on: ubuntu-latest
     steps:
-      - name: Clone Repository
+      - name: Clone Repo
         uses: actions/checkout@v4
-      - name: Set up QEMU
-        uses: docker/setup-qemu-action@v3
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
       - name: Login to Docker Hub
         uses: docker/login-action@v2
         with:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
-      - name: Build and push Docker image
-        uses: docker/build-push-action@v5
-        with:
-          context: .
-          push: true
-          tags: ${{ secrets.DOCKERHUB_USERNAME }}/app-latest
-          platforms: linux/amd64
-      - name: List local Docker images
-        run: docker image ls
+      - name: Build Image
+        run: docker image build -t ${{ secrets.DOCKERHUB_USERNAME }}/app-latest .
+      - name: List images to Docker
+        run:  docker image ls
+      - name: Create Container on the runner
+        run: docker container run -d -p 8080:80 ${{ secrets.DOCKERHUB_USERNAME }}/app-latest
+      - name: List Containers to Docker
+        run: docker container ls
+      - name: Push Image to Docker Hub
+        run: docker image push ${{ secrets.DOCKERHUB_USERNAME }}/app-latest
 
 
